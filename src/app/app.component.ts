@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from './services/api.service';
-import { Message, MessageMetadata, AppState } from './models/chat.models';
+import { Message, MessageMetadata, AppState, CompanyInfo } from './models/chat.models';
 
 @Component({
   selector: 'app-root',
@@ -209,6 +209,34 @@ import { Message, MessageMetadata, AppState } from './models/chat.models';
           <div *ngIf="isLoading" class="loading-spinner">Loading...</div>
         </div>
         </main>
+
+        <!-- Company Information Footer -->
+        <footer class="company-footer" *ngIf="companyInfo" role="contentinfo" aria-label="Company information">
+          <div class="footer-content">
+            <div class="company-details">
+              <h3 class="company-name">{{ companyInfo.name }}</h3>
+              <address class="company-address">
+                {{ companyInfo.address }}
+              </address>
+            </div>
+            <div class="contact-info">
+              <div class="contact-item">
+                <span class="contact-label" aria-label="Phone number">📞</span>
+                <a href="tel:{{ companyInfo.phone }}" class="contact-link" aria-describedby="phone-desc">
+                  {{ companyInfo.phone }}
+                </a>
+                <span id="phone-desc" class="sr-only">Call company phone number</span>
+              </div>
+              <div class="contact-item">
+                <span class="contact-label" aria-label="Email address">✉️</span>
+                <a href="mailto:{{ companyInfo.email }}" class="contact-link" aria-describedby="email-desc">
+                  {{ companyInfo.email }}
+                </a>
+                <span id="email-desc" class="sr-only">Send email to company</span>
+              </div>
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   `,
@@ -243,6 +271,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   isLoading: boolean = false; // Track loading state
   responseText: string = ''; // Editable response text
+  companyInfo: CompanyInfo | null = null;
 
   constructor(private apiService: ApiService) {}
 
@@ -254,6 +283,9 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     // Load saved chat data if available
     this.loadChatData();
+
+    // Load company information
+    this.loadCompanyInfo();
 
     // Add beforeunload event listener to save chat before page unload
     window.addEventListener('beforeunload', this.handleBeforeUnload.bind(this));
@@ -1100,5 +1132,26 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     return session.session_id === this.currentSessionBlobName || 
            session.blob_name === this.currentSessionBlobName ||
            (session.blob_name && session.blob_name.replace('.json', '') === this.currentSessionBlobName);
+  }
+
+  private loadCompanyInfo(): void {
+    this.apiService.getCompanyInfo()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (companyInfo) => {
+          this.companyInfo = companyInfo;
+          console.log('Company information loaded:', companyInfo);
+        },
+        error: (error) => {
+          console.warn('Failed to load company information:', error);
+          // Use fallback data if API fails
+          this.companyInfo = {
+            name: 'Jonas AI Solutions',
+            address: '123 AI Technology Drive, Suite 456, Tech City, TC 12345',
+            phone: '+1-555-JONAS-AI',
+            email: 'contact@jonasai.com'
+          };
+        }
+      });
   }
 }

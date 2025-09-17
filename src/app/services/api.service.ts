@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
 import { catchError, timeout, switchMap } from 'rxjs/operators';
-import { ChatRequest, ChatResponse } from '../models/chat.models';
+import { ChatRequest, ChatResponse, CompanyInfo } from '../models/chat.models';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +12,7 @@ export class ApiService {
   private readonly CHAT_SESSIONS_URL = 'http://0.0.0.0:8000/api/chat-sessions';
   private readonly SESSIONS_URL = 'http://0.0.0.0:8000/api/sessions';
   private readonly SAVE_CHAT_URL = 'http://0.0.0.0:8000/api/save-chat';
+  private readonly COMPANY_INFO_URL = 'http://0.0.0.0:8000/api/company-info';
   private readonly TIMEOUT_MS = 60000; // Increased timeout to 60 seconds
 
   constructor(private http: HttpClient) {}
@@ -122,6 +123,27 @@ export class ApiService {
       }),
       catchError(this.handleError)
     );
+  }
+
+  getCompanyInfo(): Observable<CompanyInfo> {
+    console.log('API Service: Getting company information');
+    
+    // For development, return mock data if API is not available
+    const mockCompanyInfo: CompanyInfo = {
+      name: 'Jonas AI Solutions',
+      address: '123 AI Technology Drive, Suite 456, Tech City, TC 12345',
+      phone: '+1-555-JONAS-AI',
+      email: 'contact@jonasai.com'
+    };
+
+    return this.http.get<CompanyInfo>(this.COMPANY_INFO_URL)
+      .pipe(
+        timeout(this.TIMEOUT_MS),
+        catchError((error) => {
+          console.warn('Company info API not available, using mock data');
+          return of(mockCompanyInfo);
+        })
+      );
   }
 
   private handleError(error: HttpErrorResponse): Observable<never> {

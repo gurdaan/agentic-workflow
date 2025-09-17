@@ -23,3 +23,10 @@ export interface AppState {
   isDarkTheme: boolean;
   isLoading: boolean;
 }
+
+export interface CompanyInfo {
+  name: string;
+  address: string;
+  phone: string;
+  email: string;
+}
