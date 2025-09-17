@@ -1,0 +1,205 @@
+<!-- Sidebar -->
+<aside class="sidebar" [class.collapsed]="sidebarCollapsed">
+  <div class="sidebar-header">
+    <button class="new-chat-btn" (click)="startNewChat()">
+      <span class="new-chat-icon">✨</span>
+      New Chat
+    </button>
+    <button class="collapse-btn" (click)="toggleSidebar()">
+      {{ sidebarCollapsed ? '→' : '←' }}
+    </button>
+  </div>
+  
+  <div class="chat-sessions-list" *ngIf="!sidebarCollapsed">
+    <div class="sessions-header">
+      <h3>Previous Chats</h3>
+    </div>
+    
+    <div class="sessions-container">
+      <div *ngFor="let session of chatSessions; trackBy: trackBySessionId" 
+           class="session-item"
+           [class.active]="session.session_id === currentSessionBlobName || session.blob_name === currentSessionBlobName"
+           (click)="loadChatSession(session)">
+        <div class="session-content">
+          <div class="session-title">{{ getSessionTitle(session) }}</div>
+          <div class="session-date">{{ formatSessionDate(session.last_modified) }}</div>
+        </div>
+        <button class="session-delete-btn" 
+                (click)="deleteSpecificSession(session, $event)"
+                title="Delete this chat">
+          🗑️
+        </button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- Main Content -->
+<div class="main-wrapper">
+  <header class="header">
+    <div class="header-content">
+      <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
+      <h1 class="title">Jonas AI Agent</h1>
+      <div class="header-actions">
+        <button 
+          class="delete-current-chat-btn" 
+          (click)="deleteCurrentSession()"
+          [disabled]="!currentSessionBlobName"
+          title="Delete Current Chat"
+        >
+          🗑️ Delete Chat
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <div class="chat-container">
+      <div class="messages-container" #messagesContainer>
+        <div *ngIf="messages.length === 0" class="welcome-message">
+          <div class="welcome-content">
+            <div class="welcome-icon">🤖</div>
+            <h2>Welcome to Jonas AI Agent</h2>
+            <p>Your intelligent assistant for creating user stories, test cases, and more!</p>
+            <div class="example-queries">
+              <button 
+                *ngFor="let example of exampleQueries" 
+                class="example-btn"
+                (click)="useExample(example)"
+              >
+                {{ example }}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngFor="let message of messages; trackBy: trackByMessageId" 
+             class="message" 
+             [class.user-message]="message.sender === 'user'"
+             [class.ai-message]="message.sender === 'ai'">
+          <div class="message-content">
+            <div class="message-avatar">
+              <span *ngIf="message.sender === 'user'">👤</span>
+              <span *ngIf="message.sender === 'ai'">🤖</span>
+            </div>
+            <div class="message-text">
+              <!-- Detection indicators -->
+              <div class="detection-indicators" *ngIf="message.sender === 'ai' && message.metadata">
+                <div class="detection-badge" *ngIf="isUserStory(message.metadata)">
+                  ✓ User Story
+                </div>
+                <div class="detection-badge" *ngIf="isTestCase(message.metadata)">
+                  ✓ Test Case
+                </div>
+              </div>
+              
+              <div class="message-bubble">
+                <!-- Editable content when user story or test case is detected -->
+                <div *ngIf="message.sender === 'ai' && (isUserStory(message.metadata) || isTestCase(message.metadata))" class="editable-content">
+                  <textarea 
+                    [(ngModel)]="message.content" 
+                    class="editable-message-content"
+                    rows="10"
+                    placeholder="Edit the content and click 'Send Edited Content' to refine the response...">
+                  </textarea>
+                  <button class="send-edited-btn" (click)="sendEditedContent(message)">
+                    Send To Agent
+                  </button>
+                </div>
+                
+                <!-- Regular non-editable content -->
+                <div *ngIf="!(message.sender === 'ai' && (isUserStory(message.metadata) || isTestCase(message.metadata)))" 
+                     class="message-body" 
+                     [innerHTML]="formatMessageContent(message.content)">
+                </div>
+                
+                <div class="message-actions" *ngIf="message.sender === 'ai' && hasEditableMetadata(message.metadata) && !isUserStory(message.metadata) && !isTestCase(message.metadata)">
+                  <div class="metadata-dropdown">
+                    <button class="metadata-toggle" (click)="toggleMetadata(message.id)" [class.active]="activeMetadataId === message.id">
+                      ⋮
+                    </button>
+                    
+                    <div class="metadata-menu" *ngIf="activeMetadataId === message.id">
+                      <div class="metadata-item" *ngFor="let key of getEditableMetadataKeys(message.metadata)">
+                        <label class="metadata-label">
+                          <input 
+                            type="checkbox" 
+                            [checked]="message.metadata![key]"
+                            (change)="updateMetadata(message.id, key, $event)"
+                            class="metadata-checkbox"
+                          >
+                          {{ formatMetadataKey(key) }}
+                        </label>
+                      </div>
+                      <button class="send-request-btn" (click)="sendUpdatedRequest(message)">
+                        Send Request
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="message-time">
+                  {{ formatTime(message.timestamp) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div *ngIf="appState.isLoading" class="message ai-message">
+          <div class="message-content">
+            <div class="message-avatar">🤖</div>
+            <div class="message-text">
+              <div class="message-bubble typing">
+                <div class="generating-text">Generating response...</div>
+                <div class="typing-indicator">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="errorMessage" class="error-message">
+          <div class="error-content">
+            <span>{{ errorMessage }}</span>
+            <button (click)="clearError()">×</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-container">
+        <div class="input-wrapper">
+          <textarea
+            #messageInput
+            [(ngModel)]="currentMessage"
+            (keydown)="handleKeyDown($event)"
+            (input)="adjustTextareaHeight()"
+            placeholder="Ask Jonas AI Agent anything..."
+            class="message-input"
+            rows="1"
+            [disabled]="appState.isLoading"
+            maxlength="2000"
+          ></textarea>
+          <div class="input-actions">
+            <div class="char-count" [class.warning]="currentMessage.length > 1800">
+              {{ currentMessage.length }}/2000
+            </div>
+            <button
+              (click)="sendMessage()"
+              [disabled]="!canSendMessage()"
+              class="send-button"
+            >
+              Send
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="isLoading" class="loading-spinner">Loading...</div>
+    
+    </div>
+  </main>
+</div>
