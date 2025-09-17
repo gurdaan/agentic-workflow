@@ -5,11 +5,12 @@ import { HttpClientModule } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from './services/api.service';
 import { Message, MessageMetadata, AppState } from './models/chat.models';
+import { CompanyFooterComponent } from './components/company-footer/company-footer.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, HttpClientModule, CompanyFooterComponent],
   providers: [ApiService],
   template: `
     <div class="app-container" [class.dark-theme]="appState.isDarkTheme">
@@ -209,6 +210,9 @@ import { Message, MessageMetadata, AppState } from './models/chat.models';
           <div *ngIf="isLoading" class="loading-spinner">Loading...</div>
         </div>
         </main>
+        
+        <!-- Company Footer -->
+        <app-company-footer></app-company-footer>
       </div>
     </div>
   `,

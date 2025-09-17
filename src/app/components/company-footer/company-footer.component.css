@@ -1,0 +1,139 @@
+.company-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 2rem 0 1rem 0;
+  margin-top: auto;
+  width: 100%;
+}
+
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.company-info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 2rem;
+}
+
+.company-section h3.company-name {
+  color: var(--primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+}
+
+.company-address {
+  color: var(--text);
+  opacity: 0.8;
+}
+
+.company-address p {
+  margin: 0.25rem 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.contact-section h4.contact-title {
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+}
+
+.contact-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.contact-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+  text-decoration: none;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+}
+
+.contact-link:hover {
+  background: var(--bg);
+  color: var(--primary);
+  transform: translateX(4px);
+}
+
+.contact-icon {
+  font-size: 1rem;
+  width: 20px;
+  text-align: center;
+}
+
+.contact-text {
+  font-weight: 500;
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 1.5rem;
+  text-align: center;
+}
+
+.copyright {
+  color: var(--text);
+  opacity: 0.7;
+  font-size: 0.85rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.tagline {
+  color: var(--text);
+  opacity: 0.6;
+  font-size: 0.8rem;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .company-info {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .footer-content {
+    padding: 0 1rem;
+  }
+  
+  .company-footer {
+    padding: 1.5rem 0 1rem 0;
+  }
+  
+  .contact-links {
+    gap: 0.5rem;
+  }
+  
+  .contact-link {
+    padding: 0.75rem 0.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-section h3.company-name {
+    font-size: 1.25rem;
+  }
+  
+  .contact-section h4.contact-title {
+    font-size: 1rem;
+  }
+  
+  .contact-link {
+    font-size: 0.85rem;
+  }
+}
