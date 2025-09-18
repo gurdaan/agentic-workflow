@@ -489,12 +489,13 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = content;
       
-      // Convert HTML structure to markdown-like markup
-      let markupText = this.htmlToMarkup(tempDiv);
+      // Use a simpler approach - just extract text and convert common HTML patterns
+      let markupText = this.simpleHtmlToMarkup(content);
       
       // Clean up extra whitespace
       markupText = markupText
         .replace(/\n\s*\n\s*\n/g, '\n\n')  // Remove excessive line breaks
+        .replace(/\s+/g, ' ')              // Replace multiple spaces with single space
         .trim();
       
       return markupText;
@@ -504,70 +505,43 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
-  private htmlToMarkup(element: Element): string {
-    let result = '';
-    
-    for (const node of Array.from(element.childNodes)) {
-      if (node.nodeType === Node.TEXT_NODE) {
-        result += node.textContent || '';
-      } else if (node.nodeType === Node.ELEMENT_NODE) {
-        const el = node as Element;
-        const tagName = el.tagName.toLowerCase();
-        
-        switch (tagName) {
-          case 'h1':
-            result += '# ' + (el.textContent || '') + '\n\n';
-            break;
-          case 'h2':
-            result += '## ' + (el.textContent || '') + '\n\n';
-            break;
-          case 'h3':
-            result += '### ' + (el.textContent || '') + '\n\n';
-            break;
-          case 'h4':
-            result += '#### ' + (el.textContent || '') + '\n\n';
-            break;
-          case 'h5':
-            result += '##### ' + (el.textContent || '') + '\n\n';
-            break;
-          case 'h6':
-            result += '###### ' + (el.textContent || '') + '\n\n';
-            break;
-          case 'p':
-            result += (el.textContent || '') + '\n\n';
-            break;
-          case 'strong':
-          case 'b':
-            result += '**' + (el.textContent || '') + '**';
-            break;
-          case 'em':
-          case 'i':
-            result += '*' + (el.textContent || '') + '*';
-            break;
-          case 'ul':
-            result += this.htmlToMarkup(el) + '\n';
-            break;
-          case 'ol':
-            result += this.htmlToMarkup(el) + '\n';
-            break;
-          case 'li':
-            result += '- ' + (el.textContent || '') + '\n';
-            break;
-          case 'br':
-            result += '\n';
-            break;
-          case 'hr':
-            result += '\n---\n\n';
-            break;
-          default:
-            // For other tags, just get the text content
-            result += this.htmlToMarkup(el);
-            break;
-        }
-      }
-    }
-    
-    return result;
+  private simpleHtmlToMarkup(html: string): string {
+    return html
+      // Convert headers
+      .replace(/<h1[^>]*>(.*?)<\/h1>/gi, '# $1\n\n')
+      .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n')
+      .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
+      .replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1\n\n')
+      .replace(/<h5[^>]*>(.*?)<\/h5>/gi, '##### $1\n\n')
+      .replace(/<h6[^>]*>(.*?)<\/h6>/gi, '###### $1\n\n')
+      
+      // Convert formatting
+      .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '**$1**')
+      .replace(/<b[^>]*>(.*?)<\/b>/gi, '**$1**')
+      .replace(/<em[^>]*>(.*?)<\/em>/gi, '*$1*')
+      .replace(/<i[^>]*>(.*?)<\/i>/gi, '*$1*')
+      
+      // Convert paragraphs
+      .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
+      
+      // Convert line breaks
+      .replace(/<br[^>]*\/?>/gi, '\n')
+      .replace(/<hr[^>]*\/?>/gi, '\n---\n\n')
+      
+      // Remove all remaining HTML tags
+      .replace(/<[^>]+>/g, '')
+      
+      // Decode HTML entities
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&rsquo;/g, "'")
+      .replace(/&lsquo;/g, "'")
+      .replace(/&rdquo;/g, '"')
+      .replace(/&ldquo;/g, '"');
   }
 
   formatTime(date: Date): string {
