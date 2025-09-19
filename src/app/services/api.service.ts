@@ -3,15 +3,16 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
 import { catchError, timeout, switchMap } from 'rxjs/operators';
 import { ChatRequest, ChatResponse } from '../models/chat.models';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly API_URL = 'http://0.0.0.0:8000/api/chat';
-  private readonly CHAT_SESSIONS_URL = 'http://0.0.0.0:8000/api/chat-sessions';
-  private readonly SESSIONS_URL = 'http://0.0.0.0:8000/api/sessions';
-  private readonly SAVE_CHAT_URL = 'http://0.0.0.0:8000/api/save-chat';
+  private readonly API_URL = `${environment.apiConfig.baseUrl}${environment.apiConfig.endpoints.chat}`;
+  private readonly CHAT_SESSIONS_URL = `${environment.apiConfig.baseUrl}${environment.apiConfig.endpoints.chatSessions}`;
+  private readonly SESSIONS_URL = `${environment.apiConfig.baseUrl}${environment.apiConfig.endpoints.sessions}`;
+  private readonly SAVE_CHAT_URL = `${environment.apiConfig.baseUrl}${environment.apiConfig.endpoints.saveChat}`;
   private readonly TIMEOUT_MS = 60000; // Increased timeout to 60 seconds
 
   constructor(private http: HttpClient) {}
