@@ -5,6 +5,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from './services/api.service';
 import { Message, MessageMetadata, AppState } from './models/chat.models';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -247,12 +248,18 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
+    console.log('🚀 App component initialized');
+    console.log('📍 Environment:', environment);
+    console.log('🔗 API Base URL:', environment.apiConfig.baseUrl);
+    console.log('🌐 Production mode:', environment.production);
+    
     const savedTheme = localStorage.getItem('jonas-ai-theme');
     if (savedTheme) {
       this.appState.isDarkTheme = savedTheme === 'dark';
     }
 
     // Load saved chat data if available
+    console.log('📊 Loading chat data...');
     this.loadChatData();
 
     // Add beforeunload event listener to save chat before page unload
@@ -670,13 +677,13 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   loadChatData(): void {
-    console.log('Loading chat data...');
+    console.log('📊 Loading chat data...');
     
     this.apiService.getChatSessions()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: async (data: any) => {
-          console.log('Chat sessions response:', data);
+          console.log('✅ Chat sessions response:', data);
           
           if (data.sessions && Array.isArray(data.sessions)) {
             // Extract first user messages for all sessions on initial load
@@ -702,13 +709,24 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
               }
             }
           } else {
-            console.log('No chat sessions found');
+            console.log('ℹ️ No chat sessions found');
             this.chatSessions = [];
           }
         },
         error: (error) => {
-          console.warn('Failed to load chat sessions:', error);
+          console.warn('⚠️ Failed to load chat sessions:', error);
+          console.log('🔄 App will continue without initial chat data');
+          // Don't let API failures prevent the app from loading
           this.chatSessions = [];
+          this.messages = [];
+          // Show a user-friendly message
+          this.messages.push({
+            id: Date.now().toString(),
+            content: 'Welcome! The chat service is currently connecting. You can start typing to begin a conversation.',
+            sender: 'ai',
+            timestamp: new Date(),
+            metadata: { isStreaming: false, isComplete: true }
+          });
         }
       });
   }
