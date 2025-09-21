@@ -13,7 +13,7 @@ export class ApiService {
   private readonly CHAT_SESSIONS_URL = `${environment.apiConfig.baseUrl}${environment.apiConfig.endpoints.chatSessions}`;
   private readonly SESSIONS_URL = `${environment.apiConfig.baseUrl}${environment.apiConfig.endpoints.sessions}`;
   private readonly SAVE_CHAT_URL = `${environment.apiConfig.baseUrl}${environment.apiConfig.endpoints.saveChat}`;
-  private readonly TIMEOUT_MS = 60000; // Increased timeout to 60 seconds
+  private readonly TIMEOUT_MS = 180000; // Increased timeout to 180 seconds
 
   constructor(private http: HttpClient) {}
 
