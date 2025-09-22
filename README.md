@@ -2,7 +2,54 @@
 
 A modern, responsive multi-chat interface built with Angular that mimics the ChatGPT user experience with enhanced features. This application supports multiple chat sessions, persistent storage, and real-time messaging simulation.
 
-## 🚀 Features
+## � Project Overview
+
+### 🔧 **Tech Stack**
+- **Frontend**: Angular 17+, TypeScript 5.x, RxJS 7.x
+- **Backend**: Python FastAPI (containerized)
+- **Database**: Azure Blob Storage for chat persistence
+- **Deployment**: Azure Static Web Apps, Azure Container Apps
+- **CI/CD**: GitHub Actions for continuous deployment
+- **Styling**: CSS3 with modern features (Flexbox, Grid, CSS Variables)
+- **UI Framework**: Pure Angular (no external UI libraries)
+- **Languages**: TypeScript, HTML, CSS, Python (backend)
+
+### 🏛️ **Architecture Patterns**
+- **Component Architecture**: Standalone Angular components with clear separation of concerns
+- **Service-based Design**: API services decoupled from UI components
+- **Reactive Data Flow**: RxJS for state management and asynchronous operations
+- **Environment Configuration**: Environment-specific configurations for development and production
+- **Modular Structure**: Organized by feature with shared models and services
+- **Dependency Injection**: Angular DI system for service management
+- **Responsive Design**: Mobile-first approach with adaptive layouts
+
+### 🔄 **Workflow**
+- **Development**: Local Angular development server with live reload
+- **Building**: Angular CLI with production optimizations
+- **Testing**: Unit tests with Karma and Jasmine
+- **Deployment**: 
+  - Frontend: GitHub Actions → Azure Static Web Apps
+  - Backend: Docker container → Azure Container Apps
+- **Configuration Management**: Environment-based configuration switching
+- **Version Control**: Git with GitHub for source control
+- **Monitoring**: Azure Application Insights for production monitoring
+
+### 📚 **Dependencies**
+- **Core Libraries**:
+  - Angular Core, Common, Forms
+  - RxJS for reactive programming
+  - HttpClient for API communication
+- **External Services**:
+  - Azure Static Web Apps for frontend hosting
+  - Azure Container Apps for backend API
+  - Azure Blob Storage for data persistence
+- **Development Tools**:
+  - Angular CLI for project scaffolding and building
+  - TypeScript compiler and linting
+  - GitHub Actions for CI/CD automation
+- **API Integration**: Custom backend API for chat history and session management
+
+## �🚀 Features
 
 ### 💬 **Multi-Chat Functionality**
 - **Multiple Chat Sessions**: Create and manage unlimited chat conversations
@@ -37,15 +84,6 @@ A modern, responsive multi-chat interface built with Angular that mimics the Cha
 - **Local Storage**: Theme persistence and app preferences
 - **Backend API**: Real-time chat history synchronization
 - **Export/Import**: Backup and restore chat data
-
-## 🛠️ Technologies Used
-
-- **Angular 17+**: Modern Angular with standalone components
-- **TypeScript**: Type-safe development with strict mode
-- **RxJS**: Reactive programming for state management
-- **CSS3**: Modern styling with flexbox, grid, and custom properties
-- **LocalStorage API**: Client-side data persistence
-- **Google Fonts**: Inter font family for excellent typography
 
 ## 📦 Installation & Setup
 
