@@ -60,10 +60,6 @@ A modern, responsive multi-chat interface built with Angular that mimics the Cha
 
 ### 🎨 **Modern UI/UX**
 - **ChatGPT-like Interface**: Clean, professional design inspired by popular AI chat applications with dark theme styling
-- **Theme Toggle**: Switch between light and dark modes with a toggle button in the top-right corner
-  - **Visual Feedback**: Icons change between ☀️ (light mode) and 🌙 (dark mode)
-  - **Persistence**: Theme preference is saved in localStorage and restored on page reload
-  - **Smooth Transitions**: Elegant animations when switching between themes
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Mobile-First**: Collapsible sidebar and touch-friendly interface
 - **Smooth Animations**: Elegant transitions and loading states
@@ -75,7 +71,6 @@ A modern, responsive multi-chat interface built with Angular that mimics the Cha
   - `Ctrl/Cmd + N`: New chat
   - `Ctrl/Cmd + /`: Toggle sidebar
   - `Escape`: Close sidebar (mobile)
-  - Click theme toggle: Switch between light/dark modes
 - **Message Management**: View message counts and timestamps
 - **Suggested Prompts**: Quick start options for new conversations
 - **Character Counter**: Track message length with visual feedback
@@ -116,7 +111,6 @@ A modern, responsive multi-chat interface built with Angular that mimics the Cha
 - **Start New Chat**: Click "New Chat" button or use `Ctrl/Cmd + N`
 - **Send Messages**: Type your message and press Enter or click the send button
 - **Switch Chats**: Click on any chat in the sidebar to switch between conversations
-- **Toggle Theme**: Click the theme toggle button in the top-right corner to switch between light and dark modes
 
 ### Chat Management
 - **Rename Chat**: Click the edit icon next to active chat or double-click chat title
