@@ -57,7 +57,13 @@ import { environment } from '../environments/environment';
             <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
             <h1 class="title">Jonas AI Agent</h1>
             <div class="header-actions">
-            
+              <button 
+                class="theme-toggle" 
+                (click)="toggleTheme()"
+                [title]="appState.isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'"
+                [attr.aria-label]="appState.isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'">
+                {{ appState.isDarkTheme ? '☀️' : '🌙' }}
+              </button>
             </div>
           </div>
         </header>
