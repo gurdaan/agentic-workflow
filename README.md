@@ -59,12 +59,9 @@ A modern, responsive multi-chat interface built with Angular that mimics the Cha
 - **Real-time Persistence**: Conversations saved in real-time to backend
 
 ### 🎨 **Modern UI/UX**
-- **ChatGPT-like Interface**: Clean, professional design inspired by popular AI chat applications
-- **Dark/Light Theme Toggle**: Interactive theme switch button in the header for seamless theme switching
-- **Theme Persistence**: Theme preference automatically saved to localStorage and persists across sessions
-- **Smooth Theme Transitions**: Elegant 0.3s transitions between dark and light modes for all UI elements
+- **ChatGPT-like Interface**: Clean, professional design inspired by popular AI chat applications with dark theme styling
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
-- **Mobile-First**: Collapsible sidebar and touch-friendly interface including theme toggle
+- **Mobile-First**: Collapsible sidebar and touch-friendly interface
 - **Smooth Animations**: Elegant transitions and loading states
 
 ### ⚡ **Enhanced Features**
@@ -83,7 +80,7 @@ A modern, responsive multi-chat interface built with Angular that mimics the Cha
 - **Reactive Programming**: RxJS for state management
 - **Standalone Components**: Modern Angular 17+ architecture
 - **Service-based Architecture**: Clean separation of concerns
-- **Local Storage**: Theme persistence and app preferences
+- **Local Storage**: Chat backup and app preferences
 - **Backend API**: Real-time chat history synchronization
 - **Export/Import**: Backup and restore chat data
 
@@ -114,10 +111,6 @@ A modern, responsive multi-chat interface built with Angular that mimics the Cha
 - **Start New Chat**: Click "New Chat" button or use `Ctrl/Cmd + N`
 - **Send Messages**: Type your message and press Enter or click the send button
 - **Switch Chats**: Click on any chat in the sidebar to switch between conversations
-- **Theme Toggle**: Click the sun/moon icon in the header to switch between dark and light modes
-  - **🌙 Moon Icon**: Appears in light mode, click to switch to dark mode
-  - **☀️ Sun Icon**: Appears in dark mode, click to switch to light mode
-  - **Theme Persistence**: Your theme preference is automatically saved and restored on page reload
 
 ### Chat Management
 - **Rename Chat**: Click the edit icon next to active chat or double-click chat title

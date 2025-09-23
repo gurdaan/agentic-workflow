@@ -13,7 +13,7 @@ import { environment } from '../environments/environment';
   imports: [CommonModule, FormsModule, HttpClientModule],
   providers: [ApiService],
   template: `
-    <div class="app-container" [class.dark-theme]="appState.isDarkTheme">
+      <div class="app-container dark-theme" [class.sidebar-open]="!sidebarCollapsed">
       <!-- Sidebar -->
       <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
         <div class="sidebar-header">
@@ -56,15 +56,6 @@ import { environment } from '../environments/environment';
           <div class="header-content">
             <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
             <h1 class="title">Jonas AI Agent</h1>
-            <div class="header-actions">
-              <button 
-                class="theme-toggle" 
-                (click)="toggleTheme()"
-                [title]="appState.isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'"
-                [attr.aria-label]="appState.isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'">
-                {{ appState.isDarkTheme ? '☀️' : '🌙' }}
-              </button>
-            </div>
           </div>
         </header>
 
@@ -258,11 +249,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
     console.log('📍 Environment:', environment);
     console.log('🔗 API Base URL:', environment.apiConfig.baseUrl);
     console.log('🌐 Production mode:', environment.production);
-    
-    const savedTheme = localStorage.getItem('jonas-ai-theme');
-    if (savedTheme) {
-      this.appState.isDarkTheme = savedTheme === 'dark';
-    }
 
     // Load saved chat data if available
     console.log('📊 Loading chat data...');
@@ -431,11 +417,6 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   canSendMessage(): boolean {
     return this.currentMessage.trim().length > 0 && !this.appState.isLoading;
-  }
-
-  toggleTheme(): void {
-    this.appState.isDarkTheme = !this.appState.isDarkTheme;
-    localStorage.setItem('jonas-ai-theme', this.appState.isDarkTheme ? 'dark' : 'light');
   }
 
   clearError(): void {
