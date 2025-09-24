@@ -107,7 +107,7 @@ import { environment } from '../environments/environment';
                     <div *ngIf="message.sender === 'ai' && (isUserStory(message.metadata) || isTestCase(message.metadata) || isDevTask(message.metadata))" class="editable-content">
                       <textarea 
                         [(ngModel)]="message.content" 
-                        class="editable-message-content"
+                        class="editable-message-content formatted-content"
                         rows="10"
                         placeholder="Edit the content and click 'Send Edited Content' to refine the response...">
                       </textarea>
@@ -116,7 +116,7 @@ import { environment } from '../environments/environment';
                     <!-- Regular non-editable content -->
                     <div *ngIf="!(message.sender === 'ai' && (isUserStory(message.metadata) || isTestCase(message.metadata) || isDevTask(message.metadata)))" 
                          class="message-body">
-                      <pre class="markup-content">{{ convertToMarkup(message.content) }}</pre>
+                      <pre class="markup-content formatted-content">{{ convertToMarkup(message.content) }}</pre>
                     </div>
                     
                     <div class="message-actions" *ngIf="message.sender === 'ai' && hasEditableMetadata(message.metadata) && !isUserStory(message.metadata) && !isTestCase(message.metadata) && !isDevTask(message.metadata)">
@@ -736,6 +736,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
               
               let sender: 'user' | 'ai' = 'ai';
               let content = historyItem.content || '';
+              let metadata: MessageMetadata = historyItem.metadata || {};
               
               if (historyItem.role === 'AuthorRole.USER') {
                 sender = 'user';
@@ -749,9 +750,25 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
                     if (jsonMatch && jsonMatch[1]) {
                       const parsedContent = JSON.parse(jsonMatch[1]);
                       content = parsedContent.content || content;
+                      // Also extract metadata if present in JSON
+                      if (parsedContent.metadata) {
+                        metadata = { ...metadata, ...parsedContent.metadata };
+                      }
                     }
                   } catch (e) {
                     console.warn('Failed to parse JSON content:', e);
+                  }
+                }
+                
+                // Check for content patterns suggesting user story, test case, or dev task
+                // if metadata is not already set
+                if (!metadata['Userstory'] && !metadata['TestCase'] && !metadata['DevTask']) {
+                  if (content.match(/user story|as a user|acceptance criteria/i)) {
+                    metadata['Userstory'] = true;
+                  } else if (content.match(/test case|test scenario|test steps/i)) {
+                    metadata['TestCase'] = true;
+                  } else if (content.match(/development task|implementation task|dev task/i)) {
+                    metadata['DevTask'] = true;
                   }
                 }
               } else if (historyItem.role === 'AuthorRole.TOOL') {
@@ -764,7 +781,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
                   content: content,
                   sender: sender,
                   timestamp: historyItem.timestamp ? new Date(historyItem.timestamp) : new Date(),
-                  metadata: undefined
+                  metadata: metadata
                 });
               }
             });
