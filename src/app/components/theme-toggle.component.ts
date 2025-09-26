@@ -10,6 +10,7 @@ import { ThemeService } from '../services/theme.service';
   template: `
     <button 
       class="theme-toggle"
+      data-testid="theme-toggle"
       (click)="toggleTheme()"
       [attr.aria-label]="isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'"
       [title]="isDarkTheme ? 'Switch to light mode' : 'Switch to dark mode'"

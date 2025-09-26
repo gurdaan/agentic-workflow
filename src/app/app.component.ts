@@ -4,16 +4,18 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { Subject, takeUntil } from 'rxjs';
 import { ApiService } from './services/api.service';
+import { ThemeService } from './services/theme.service';
+import { ThemeToggleComponent } from './components/theme-toggle.component';
 import { Message, MessageMetadata, AppState } from './models/chat.models';
 import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule, HttpClientModule, ThemeToggleComponent],
   providers: [ApiService],
   template: `
-      <div class="app-container dark-theme" [class.sidebar-open]="!sidebarCollapsed">
+      <div class="app-container" [class.dark-theme]="isDarkTheme" [class.sidebar-open]="!sidebarCollapsed">
       <!-- Sidebar -->
       <aside class="sidebar" [class.collapsed]="sidebarCollapsed">
         <div class="sidebar-header">
@@ -56,6 +58,9 @@ import { environment } from '../environments/environment';
           <div class="header-content">
             <button class="mobile-menu-btn" (click)="toggleSidebar()">☰</button>
             <h1 class="title">Jonas AI Agent</h1>
+            <div class="header-actions">
+              <app-theme-toggle></app-theme-toggle>
+            </div>
           </div>
         </header>
 
@@ -218,6 +223,7 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   
   private destroy$ = new Subject<void>();
   private shouldScrollToBottom = false;
+  isDarkTheme = true; // For template binding
 
   messages: Message[] = [];
   currentMessage = '';
@@ -242,13 +248,21 @@ export class AppComponent implements OnInit, OnDestroy, AfterViewChecked {
   isLoading: boolean = false; // Track loading state
   responseText: string = ''; // Editable response text
 
-  constructor(private apiService: ApiService) {}
+  constructor(private apiService: ApiService, private themeService: ThemeService) {}
 
   ngOnInit(): void {
     console.log('🚀 App component initialized');
     console.log('📍 Environment:', environment);
     console.log('🔗 API Base URL:', environment.apiConfig.baseUrl);
     console.log('🌐 Production mode:', environment.production);
+
+    // Subscribe to theme changes
+    this.themeService.isDarkTheme$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(isDark => {
+        this.isDarkTheme = isDark;
+        this.appState.isDarkTheme = isDark;
+      });
 
     // Load saved chat data if available
     console.log('📊 Loading chat data...');
