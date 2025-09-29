@@ -88,6 +88,14 @@ jobs:
           timeout 30 bash -c 'until curl -f http://localhost:8000/health || curl -f http://localhost:8000/docs; do echo "Waiting for backend..."; sleep 2; done'
         continue-on-error: true
 
+      # Verify Backend is Running
+      - name: Verify Backend Health
+        run: |
+          echo "Testing backend health endpoint..."
+          curl -f http://localhost:8000/health || echo "Health endpoint failed"
+          echo "Testing backend docs endpoint..."
+          curl -f http://localhost:8000/docs || echo "Docs endpoint failed"
+
       # Install Frontend Dependencies
       - name: Install Frontend Dependencies
         run: npm ci
@@ -97,14 +105,18 @@ jobs:
         run: |
           # Override API base URL to point to local backend
           sed -i "s|baseUrl: 'http://0.0.0.0:8000'|baseUrl: 'http://localhost:8000'|g" src/environments/environment.ts
-          npm run test -- --watch=false --browsers=ChromeHeadless --include='**/api.integration.spec.ts'
+          # Run only the integration test file
+          npm run test -- --watch=false --browsers=ChromeHeadless --include='tests/api.integration.spec.ts' --code-coverage
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4
         if: always()
         with:
           name: integration-test-results
-          path: coverage/
+          path: |
+            coverage/
+            karma.xml
+            test-results.xml
 
   # Build and Deploy Job (only runs after tests pass)
   build_and_deploy:
