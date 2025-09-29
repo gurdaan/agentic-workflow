@@ -1,60 +1,138 @@
-# name: Azure Static Web Apps CI/CD
+name: Frontend Integration Tests CI/CD
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   pull_request:
-#     types: [opened, synchronize, reopened, closed]
-#     branches:
-#       - main
+# This workflow tests Angular frontend against actual FastAPI backend
+# Backend repo: https://github.com/gurdaan/agentic-workflow-backend
 
-# jobs:
-#   build_and_deploy_job:
-#     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
-#     runs-on: ubuntu-latest
-#     name: Build and Deploy Job
-#     steps:
-#       - uses: actions/checkout@v4
-#         with:
-#           submodules: true
-#           lfs: false
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
 
-#       - name: Setup Node.js
-#         uses: actions/setup-node@v4
-#         with:
-#           node-version: '18'
-#           cache: 'npm'
+jobs:
+  # Integration Tests Job (Frontend + Backend)
+  integration_tests:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Frontend Integration Tests
+    
+    steps:
+      # Checkout Frontend Repository
+      - name: Checkout Frontend Repository
+        uses: actions/checkout@v4
 
-#       - name: Install dependencies
-#         run: npm ci
+      # Checkout Backend Repository
+      - name: Checkout Backend Repository
+        uses: actions/checkout@v4
+        with:
+          repository: gurdaan/agentic-workflow-backend
+          path: backend
 
-#       - name: Build Angular app
-#         run: npm run build --if-present
-#         env:
-#           NODE_ENV: production
+      # Setup Python for Backend
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
 
-#       - name: Build And Deploy
-#         id: builddeploy
-#         uses: Azure/static-web-apps-deploy@v1
-#         with:
-#           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_MUD_0113ED00F }}
-#           repo_token: ${{ secrets.GITHUB_TOKEN }}
-#           action: "upload"
-#           ###### Repository/Build Configurations ######
-#           app_location: "/" # App source code path
-#           api_location: "" # Api source code path - optional
-#           output_location: "dist/jonas-ai-agent" # Built app content directory
-#           ###### End of Repository/Build Configurations ######
+      # Setup Node.js for Frontend
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-#   close_pull_request_job:
-#     if: github.event_name == 'pull_request' && github.event.action == 'closed'
-#     runs-on: ubuntu-latest
-#     name: Close Pull Request Job
-#     steps:
-#       - name: Close Pull Request
-#         id: closepullrequest
-#         uses: Azure/static-web-apps-deploy@v1
-#         with:
-#           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_MUD_0113ED00F }}
-#           action: "close"
+      # Install Backend Dependencies
+      - name: Install Backend Dependencies
+        run: |
+          cd backend
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # Start FastAPI Backend Server
+      - name: Start FastAPI Backend
+        run: |
+          cd backend
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+          echo "Waiting for backend to start..."
+          sleep 10
+        env:
+          PYTHONPATH: ./backend
+
+      # Wait for Backend Health Check
+      - name: Wait for Backend to be Ready
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:8000/health || curl -f http://localhost:8000/docs; do echo "Waiting for backend..."; sleep 2; done'
+        continue-on-error: true
+
+      # Install Frontend Dependencies
+      - name: Install Frontend Dependencies
+        run: npm ci
+
+      # Run Integration Tests (Frontend API calls against real backend)
+      - name: Run Integration API Tests
+        run: |
+          # Override API base URL to point to local backend
+          sed -i "s|baseUrl: 'http://0.0.0.0:8000'|baseUrl: 'http://localhost:8000'|g" src/environments/environment.ts
+          npm run test -- --watch=false --browsers=ChromeHeadless --include='**/api.integration.spec.ts'
+
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results
+          path: coverage/
+
+  # Build and Deploy Job (only runs after tests pass)
+  build_and_deploy:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Frontend
+    needs: [integration_tests]
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Angular App
+        run: npm run build --if-present
+        env:
+          NODE_ENV: production
+
+      - name: Build And Deploy to Azure Static Web Apps
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_MUD_0113ED00F }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "/"
+          api_location: ""
+          output_location: "dist/jonas-ai-agent"
+
+  # Close PR Job
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_WITTY_MUD_0113ED00F }}
+          action: "close"
