@@ -150,6 +150,17 @@ export class ApiService {
     }
     
     console.error('API Error:', error);
-    return throwError(() => new Error(errorMessage));
+    // Enrich error so callers (tests) can make decisions (e.g., soft-skip on known 500)
+    const enriched: any = new Error(errorMessage);
+    enriched.status = error.status;
+    enriched.statusText = error.statusText;
+    enriched.url = error.url;
+    enriched.original = error; // raw HttpErrorResponse
+    // Try to surface backend detail chains (FastAPI detail, Semantic Kernel nested detail)
+    try {
+      const raw = (error as any).error;
+      enriched.detail = raw?.detail || raw?.error?.message || raw;
+    } catch { /* noop */ }
+    return throwError(() => enriched);
   }
 }

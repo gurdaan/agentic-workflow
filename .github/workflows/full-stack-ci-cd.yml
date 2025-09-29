@@ -113,6 +113,34 @@ jobs:
       - name: Install Frontend Dependencies
         run: npm ci
 
+      # Diagnostic: Print environment config & secret presence (masked)
+      - name: Diagnostics - Environment & Secrets Presence
+        run: |
+          echo '--- Frontend Environment (pre-sed) ---'
+          grep -E "baseUrl|production" src/environments/environment.ts || true
+          echo '--- Expected Backend Base URL Override Target ---'
+          echo "Will replace baseUrl: 'http://0.0.0.0:8000' -> 'http://localhost:8000'"
+          echo '--- Secret Presence (Y=present, N=missing) ---'
+          for key in \
+            AZURE_OPENAI_ENDPOINT \
+            AZURE_OPENAI_DEPLOYMENT \
+            AZURE_OPENAI_API_VERSION \
+            AI_FOUNDRY_ENDPOINT \
+            AI_FOUNDRY_PROJECT_NAME \
+            AZURE_STORAGE_ACCOUNT_NAME \
+            AZURE_STORAGE_CONTAINER_NAME; do
+              if [ -n "${!key}" ]; then echo "$key=Y"; else echo "$key=N"; fi; done
+          echo 'STRICT_CHAT_TEST flag:' ${STRICT_CHAT_TEST:-unset}
+        env:
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+          AZURE_OPENAI_API_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION }}
+          AI_FOUNDRY_ENDPOINT: ${{ secrets.AI_FOUNDRY_ENDPOINT }}
+          AI_FOUNDRY_PROJECT_NAME: ${{ secrets.AI_FOUNDRY_PROJECT_NAME }}
+          AZURE_STORAGE_ACCOUNT_NAME: ${{ secrets.AZURE_STORAGE_ACCOUNT_NAME }}
+          AZURE_STORAGE_CONTAINER_NAME: ${{ secrets.AZURE_STORAGE_CONTAINER_NAME }}
+          STRICT_CHAT_TEST: ${{ vars.STRICT_CHAT_TEST }}
+
       # Run Integration Tests (Frontend API calls against real backend)
       - name: Run Integration API Tests
         run: |
