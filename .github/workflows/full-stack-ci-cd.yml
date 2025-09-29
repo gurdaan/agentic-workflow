@@ -108,8 +108,13 @@ jobs:
           # List test files to verify they exist
           echo "Available test files:"
           find . -name "*.spec.ts"
-          # Run tests directly using a specific test file to ensure it runs
-          npx ng test --include=tests/api.integration.spec.ts --watch=false --browsers=ChromeHeadless --code-coverage
+          # Run all tests (Angular config + tsconfig.spec.json now include tests directory)
+          npx ng test --watch=false --browsers=ChromeHeadless --code-coverage || TEST_EXIT=$?
+          # Detect zero-test scenario (Angular exits 0 but ran 0 tests) by checking coverage summary existence
+          if ! grep -R "integration" coverage/* 2>/dev/null && [ -f coverage/lcov.info ]; then
+            echo "⚠️ No integration test markers found in coverage. Ensure tests executed.";
+          fi
+          exit ${TEST_EXIT:-0}
 
       - name: Upload Test Results
         uses: actions/upload-artifact@v4

@@ -7,8 +7,9 @@
     ]
   },
   "include": [
-    "src/**/*.spec.ts",
+    "src/test.ts",            // test entry file must be part of compilation
     "src/**/*.d.ts",
+    "src/**/*.spec.ts",
     "tests/**/*.spec.ts"
   ]
 }
