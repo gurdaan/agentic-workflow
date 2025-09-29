@@ -3,7 +3,8 @@ module.exports = function(config) {
         frameworks: ['jasmine'],
         files: [
             'src/test.ts',
-            'tests/hello-world.spec.ts'
+            'tests/hello-world.spec.ts',
+            'tests/api.integration.spec.ts'
         ],
         browsers: ['Chrome'],
         singleRun: true
