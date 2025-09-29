@@ -51,6 +51,19 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      # Add test runner origin to CORS allow list (temporary CI patch)
+      - name: Patch Backend CORS For CI
+        run: |
+          if grep -q 'allow_origins=\[' backend/app.py; then
+            echo "Patching CORS allow_origins with Karma origin..."
+            # Insert localhost:9876 origins if not already present
+            grep -q 'localhost:9876' backend/app.py || sed -i "s/allow_origins=\[/allow_origins=\[\n        \"http:\/\/localhost:9876\",\n        \"http:\/\/127.0.0.1:9876\",/" backend/app.py
+            echo 'Updated allow_origins:'
+            grep -n 'allow_origins=\[' -A5 backend/app.py
+          else
+            echo "Could not find allow_origins list in backend/app.py; skipping patch";
+          fi
+
       # Start FastAPI Backend Server
       - name: Start FastAPI Backend
         run: |

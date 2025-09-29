@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientModule } from '@angular/common/http';
 import { ApiService } from '../src/app/services/api.service';
-import { environment } from '../src/environments/environment';
 
 // Integration Tests - Testing against actual FastAPI backend
 describe('ApiService Integration Tests', () => {
@@ -19,40 +18,59 @@ describe('ApiService Integration Tests', () => {
     expect(service).toBeTruthy();
   });
 
-  // Test the /api/chat endpoint with a simple message
-  it('should send message to /api/chat endpoint and get response', (done) => {
-    const testMessage = 'Hello, can you help me?';
+  // Strict test for /api/chat endpoint expecting a valid AI response with retry logic
+  it('should return an AI response for a basic message (with retries)', (done) => {
+    const testMessage = 'hello';
+    const maxAttempts = 3;
+    const baseDelayMs = 1500; // exponential backoff base
+    let attempt = 0;
+    const start = Date.now();
+    const overallTimeoutMs = 45000; // allow more time due to retries
+    let overallTimer: any;
 
-    service.sendMessage(testMessage).subscribe({
-      next: (response) => {
-        // Basic checks for a valid response
-        expect(response).toBeTruthy();
-        expect(response.content).toBeDefined();
-        expect(typeof response.content).toBe('string');
-        expect(response.content.length).toBeGreaterThan(0);
-        
-        // Log the response for verification
-        console.log('✅ /api/chat Response received:', {
-          hasContent: !!response.content,
-          contentLength: response.content.length,
-          hasMetadata: !!response.metadata
-        });
-        
-        done();
-      },
-      error: (error) => {
-        console.error('❌ /api/chat Error:', error);
-        
-        // Let's be more lenient - even if there are some errors, 
-        // we just want to verify the endpoint is reachable
-        if (error.status === 500 || error.status === 503) {
-          console.log('� Backend responded but had internal error - endpoint is reachable');
-          done(); // Still consider this a success for connectivity test
-        } else {
-          fail(`API call failed: ${error.message || error}`);
-          done();
+    const finish = (fn: () => void) => {
+      if (overallTimer) clearTimeout(overallTimer);
+      fn();
+      done();
+    };
+
+    overallTimer = setTimeout(() => {
+      fail(`Timed out after ${(Date.now() - start)}ms and ${attempt} attempt(s)`);
+      done();
+    }, overallTimeoutMs);
+
+    const attemptCall = () => {
+      attempt++;
+      console.log(`➡️ /api/chat attempt ${attempt}/${maxAttempts}`);
+      service.sendMessage(testMessage).subscribe({
+        next: (response: any) => {
+          try {
+            expect(response).toBeTruthy();
+            expect(typeof response.content).toBe('string');
+            expect(response.content.trim().length).toBeGreaterThan(0);
+            console.log('✅ /api/chat success on attempt', attempt, 'Snippet:', response.content.slice(0, 120));
+            finish(() => {});
+          } catch (assertErr) {
+            fail('Assertion failure: ' + (assertErr as Error).message);
+            finish(() => {});
+          }
+        },
+        error: (error: any) => {
+          const status = error?.status;
+          const retriable = [0, 429, 500, 502, 503, 504].includes(status);
+          console.warn(`⚠️ /api/chat attempt ${attempt} failed with status ${status}. Retriable=${retriable}`);
+          if (retriable && attempt < maxAttempts) {
+            const delay = baseDelayMs * Math.pow(2, attempt - 1);
+            console.log(`⏳ Waiting ${delay}ms before retry...`);
+            setTimeout(attemptCall, delay);
+            return;
+          }
+          fail('❌ /api/chat error after retries: ' + (error?.message || JSON.stringify(error)));
+          finish(() => {});
         }
-      }
-    });
-  }, 15000); // 15 second timeout
+      });
+    };
+
+    attemptCall();
+  }, 46000); // 46 second Jasmine timeout budget (slightly above overallTimeoutMs)
 });
